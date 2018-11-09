@@ -8,5 +8,17 @@ class pathFiles():
             if file.endswith(".xlsx"):
                 self.resourcesXlsx.append(os.path.join(self.resourcesPath, file))
 
-        self.OC_FilePath = self.resourcesXlsx[1]
-        self.DOD_FilePath = self.resourcesXlsx[0]
+
+        self.indiceOC = encontrarArchivos(self.resourcesXlsx,'Oc ')
+        self.indiceDOD = encontrarArchivos(self.resourcesXlsx,'DoD ')
+
+        self.OC_FilePath = self.resourcesXlsx[self.indiceOC]
+        self.DOD_FilePath = self.resourcesXlsx[self.indiceDOD]
+
+def encontrarArchivos(resourcesXlsx,abrFile):
+    
+    for i,file in enumerate(resourcesXlsx):
+        if file.find(abrFile) > -1:
+            indice = i
+
+    return indice

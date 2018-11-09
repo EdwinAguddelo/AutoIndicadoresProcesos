@@ -10,7 +10,7 @@ def pathConstructor(path):
     DOD_FilePath = path.DOD_FilePath
     OC_FilePath = path.OC_FilePath
 
-def startproccess(path):    
+def startproccess(path):
     OC_DataSet = pd.read_excel(OC_FilePath)
     DOD_DataSet = pd.read_excel(DOD_FilePath)
     dataSetFinal = proccess(OC_DataSet,DOD_DataSet)
@@ -27,7 +27,7 @@ def proccess(OC_DataSet,DOD_DataSet):
     DOD_Final = DOD_DataSet.merge(OC_DataSet, left_on='ID', right_on='ID2', how='inner')
     dataSetFinal = DOD_Final[['ID','Carta de certificación','carta sin pruebas','Carta de certificación condicionada','GIT',
           'Fecha de vencimiento carta de certificación','Aprueba el Paso a Producción','Dueño de producto que aprueba  paso a producción',
-          'Orden de  Cambio','Codigo Cierre','Dirección']]
+          'Orden de  Cambio','Codigo Cierre','Dirección','Fecha Inicio']]
     return dataSetFinal
 
 def renombrarColumnaID(OC_DataSet):
