@@ -18,9 +18,9 @@ def startproccess(path):
     dataSetFinal = proccess(OC_DataSet,DOD_DataSet)
     year,month = detectYearAndMonth(dataSetFinal)
     dataFinalCleaned = CleanCols(dataSetFinal)
-    incidentesSoporte,incidentesTransformacion,cambiosSoporte,cambiosTransformacion = indicators(dataFinalCleaned)
-    Dtconsolidado = dataconsolidated(year,month,incidentesSoporte,cambiosSoporte,Dtconsolidado,'Soporte')
-    Dtconsolidado = dataconsolidated(year,month,incidentesTransformacion,cambiosTransformacion,Dtconsolidado,'Transformacion')   
+    incidentesSoporte,incidentesTransformacion,cambiosSoporte,cambiosTransformacion,pruebasTerminadas = indicators(dataFinalCleaned)
+    Dtconsolidado = dataconsolidated(year,month,incidentesSoporte,cambiosSoporte,Dtconsolidado,'Soporte',pruebasTerminadas)
+    Dtconsolidado = dataconsolidated(year,month,incidentesTransformacion,cambiosTransformacion,Dtconsolidado,'Transformacion',pruebasTerminadas)
     ExportarExcel(Dtconsolidado,consolidado)
 
 def indicators(dataFinalCleaned):
@@ -36,12 +36,13 @@ def indicators(dataFinalCleaned):
     datframeTransformacion = datframeI2[datframeI2['Dirección'] == 'Transformacion']
     cambiosSoporte = len(datframeSoporte)
     cambiosTransformacion = len(datframeTransformacion)
-    return cantidadDeCambiosConIncidentesSoporte,cantidadDeCambiosConIncidentesTransf,cambiosSoporte,cambiosTransformacion
+    pruebasTerminadas = cambiosSoporte + cambiosTransformacion
+    return cantidadDeCambiosConIncidentesSoporte,cantidadDeCambiosConIncidentesTransf,cambiosSoporte,cambiosTransformacion,pruebasTerminadas
 
-def dataconsolidated(year,month,cantidadDeCambiosConIncidentes,cambios,Dtconsolidado,direccion):
-    rowToAppend = [year,month,direccion,cantidadDeCambiosConIncidentes,cambios]
+def dataconsolidated(year,month,cantidadDeCambiosConIncidentes,cambios,Dtconsolidado,direccion,pruebasTerminadas):
+    rowToAppend = [year,month,direccion,cantidadDeCambiosConIncidentes,cambios,pruebasTerminadas]
 
-    DataFrameToAppend = pd.DataFrame(columns=['Año','Mes','Direccion','Cambios con incidentes','total cambios'])
+    DataFrameToAppend = pd.DataFrame(columns=['Año','Mes','Direccion','Cambios con incidentes','total cambios','Pruebas terminadas'])
     DataFrameToAppend.loc[0, :] = rowToAppend
     Dtconsolidado = Dtconsolidado.append(DataFrameToAppend, ignore_index=True)
     return Dtconsolidado
