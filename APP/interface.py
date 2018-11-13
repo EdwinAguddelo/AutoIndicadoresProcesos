@@ -28,7 +28,7 @@ class Application():
 
 
     def start(self):
-     if self.logFilePath.get():        
+     if self.logFilePath.get():
          paths=pathFiles(self.logFilePath.get())
          pathConstructor(paths)
          startproccess(self.logFilePath.get())

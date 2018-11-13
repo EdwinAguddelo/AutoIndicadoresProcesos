@@ -11,12 +11,14 @@ class pathFiles():
 
         self.indiceOC = encontrarArchivos(self.resourcesXlsx,'Oc ')
         self.indiceDOD = encontrarArchivos(self.resourcesXlsx,'DoD ')
+        self.indiceConsolidado = encontrarArchivos(self.resourcesXlsx,'ConsolidadoProcesos')
 
         self.OC_FilePath = self.resourcesXlsx[self.indiceOC]
         self.DOD_FilePath = self.resourcesXlsx[self.indiceDOD]
+        self.consolidado = self.resourcesXlsx[self.indiceConsolidado]
 
 def encontrarArchivos(resourcesXlsx,abrFile):
-    
+
     for i,file in enumerate(resourcesXlsx):
         if file.find(abrFile) > -1:
             indice = i

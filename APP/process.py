@@ -6,19 +6,68 @@ import calendar
 import os
 
 def pathConstructor(path):
-    global DOD_FilePath,OC_FilePath
+    global DOD_FilePath,OC_FilePath,consolidado
     DOD_FilePath = path.DOD_FilePath
     OC_FilePath = path.OC_FilePath
+    consolidado = path.consolidado
 
 def startproccess(path):
     OC_DataSet = pd.read_excel(OC_FilePath)
     DOD_DataSet = pd.read_excel(DOD_FilePath)
+    Dtconsolidado = pd.read_excel(consolidado)
     dataSetFinal = proccess(OC_DataSet,DOD_DataSet)
-    mes = datetime.now().month
-    anteriormes = calendar.month_name[mes - 1]
-    fileAnteriorMes = 'DOD {}.xlsx'.format(anteriormes)
-    rutaPath = os.path.join(path,fileAnteriorMes)
-    ExportarExcel(dataSetFinal,rutaPath)
+    year,month = detectYearAndMonth(dataSetFinal)
+    dataFinalCleaned = CleanCols(dataSetFinal)
+    incidentesSoporte,incidentesTransformacion,cambiosSoporte,cambiosTransformacion = indicators(dataFinalCleaned)
+    Dtconsolidado = dataconsolidated(year,month,incidentesSoporte,cambiosSoporte,Dtconsolidado,'Soporte')
+    Dtconsolidado = dataconsolidated(year,month,incidentesTransformacion,cambiosTransformacion,Dtconsolidado,'Transformacion')   
+    ExportarExcel(Dtconsolidado,consolidado)
+
+def indicators(dataFinalCleaned):
+    datframeI1 = dataFinalCleaned[dataFinalCleaned['Codigo Cierre'] == 'Ejecutado - Con Incidente']
+    datframeI2 = datframeI1[(datframeI1['Carta de certificación'] == 1) | (datframeI1['carta sin pruebas'] == 1) | (datframeI1['Carta de certificación condicionada'] == 1) | (datframeI1['GIT'] == 1)]
+    datframeSoporte = datframeI2[datframeI2['Dirección'] == 'Soporte']
+    datframeTransformacion = datframeI2[datframeI2['Dirección'] == 'Transformacion']
+    cantidadDeCambiosConIncidentesSoporte  = len(datframeSoporte)
+    cantidadDeCambiosConIncidentesTransf  = len(datframeTransformacion)
+
+    datframeI2 = dataFinalCleaned[(dataFinalCleaned['Carta de certificación'] == 1) | (dataFinalCleaned['carta sin pruebas'] == 1) | (dataFinalCleaned['Carta de certificación condicionada'] == 1) | (dataFinalCleaned['GIT'] == 1)]
+    datframeSoporte = datframeI2[datframeI2['Dirección'] == 'Soporte']
+    datframeTransformacion = datframeI2[datframeI2['Dirección'] == 'Transformacion']
+    cambiosSoporte = len(datframeSoporte)
+    cambiosTransformacion = len(datframeTransformacion)
+    return cantidadDeCambiosConIncidentesSoporte,cantidadDeCambiosConIncidentesTransf,cambiosSoporte,cambiosTransformacion
+
+def dataconsolidated(year,month,cantidadDeCambiosConIncidentes,cambios,Dtconsolidado,direccion):
+    rowToAppend = [year,month,direccion,cantidadDeCambiosConIncidentes,cambios]
+
+    DataFrameToAppend = pd.DataFrame(columns=['Año','Mes','Direccion','Cambios con incidentes','total cambios'])
+    DataFrameToAppend.loc[0, :] = rowToAppend
+    Dtconsolidado = Dtconsolidado.append(DataFrameToAppend, ignore_index=True)
+    return Dtconsolidado
+
+def detectYearAndMonth(dtFrame):
+    monthCol = dtFrame['Fecha Inicio']
+    date = pd.DataFrame(monthCol)
+    month = date['Fecha Inicio'].dt.month
+    year = date['Fecha Inicio'].dt.year
+    year = max(year)
+    month = min(month)
+    meses = { 0 : 'Diciembre', 1 : 'Enero', 2: 'Febrero',3:'Marzo',
+             4:'Abril',5:'Mayo',6:'Junio',7:'Julio',8:'Agosto',9:'Septiembre',
+             10:'Octubre',11:'Noviembre',12:'Diciembre' }
+
+    month = meses[month]
+    return year,month
+
+def  CleanCols(dataSetFinal):
+    teamCol = dataSetFinal['Dirección'].tolist()
+    for i in range(len(teamCol)):
+        teamCol[i]=teamCol[i].split(' ')[1]
+
+    dataSetFinal['Dirección'] = pd.DataFrame(teamCol)
+    return dataSetFinal
+
 
 def proccess(OC_DataSet,DOD_DataSet):
     OC_DataSet = renombrarColumnaID(OC_DataSet)
